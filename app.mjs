@@ -2,7 +2,6 @@
 import {
   normalizeText,
   addTodo,
-  toggleTodo,
   removeTodo,
   removeAllDone,
   completeTodo,
@@ -106,6 +105,21 @@ function mutate(fn) {
   render();
 }
 
+// Time edits must NOT rebuild the list: pickers fire input/change repeatedly
+// while the user is still interacting, and a re-render destroys the picker.
+function handleTimePick(e) {
+  if (e.target.dataset.action !== 'set-time') return;
+  const id = Number(e.target.closest('li').dataset.id);
+  const todo = state.todos.find((t) => t.id === id);
+  const base = (todo && todo.completedAt) || Date.now();
+  const ts = combineDateAndTime(base, e.target.value);
+  if (!ts) return; // incomplete pick — leave the input untouched
+  state = { ...state, todos: setCompletedAt(state.todos, id, ts) };
+  saveState();
+  const when = e.target.closest('li').querySelector('.when');
+  if (when) when.textContent = '✓ ' + formatTimeHM(ts);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   $('#todo-form').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -124,22 +138,19 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   $('#todo-list').addEventListener('change', (e) => {
-    const action = e.target.dataset.action;
-    const id = Number(e.target.closest('li').dataset.id);
-    if (action === 'toggle') {
-      mutate((todos) =>
-        e.target.checked ? completeTodo(todos, id, Date.now()) : uncompleteTodo(todos, id)
-      );
+    if (e.target.dataset.action === 'set-time') {
+      handleTimePick(e);
       return;
     }
-    if (action === 'set-time') {
-      const todo = state.todos.find((t) => t.id === id);
-      const base = (todo && todo.completedAt) || Date.now();
-      const ts = combineDateAndTime(base, e.target.value);
-      if (ts) mutate((todos) => setCompletedAt(todos, id, ts));
-      else render(); // invalid pick — revert display
-    }
+    if (e.target.dataset.action !== 'toggle') return;
+    const id = Number(e.target.closest('li').dataset.id);
+    mutate((todos) =>
+      e.target.checked ? completeTodo(todos, id, Date.now()) : uncompleteTodo(todos, id)
+    );
   });
+
+  // Live updates while the native picker is still open.
+  $('#todo-list').addEventListener('input', handleTimePick);
 
   for (const btn of document.querySelectorAll('[data-filter]')) {
     btn.addEventListener('click', () => {
