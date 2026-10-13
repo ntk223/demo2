@@ -11,6 +11,12 @@ import {
   toggleTodo,
   removeTodo,
   removeAllDone,
+  completeTodo,
+  uncompleteTodo,
+  setCompletedAt,
+  formatTimeHM,
+  combineDateAndTime,
+  sanitizeTodo,
   FILTER_ALL,
   FILTER_ACTIVE,
   FILTER_DONE,
@@ -98,4 +104,70 @@ test('countByStatus reports total/active/done', () => {
   const mixed = toggleTodo(list, 3);
   assert.deepEqual(countByStatus(mixed), { total: 3, active: 2, done: 1 });
   assert.deepEqual(countByStatus([]), { total: 0, active: 0, done: 0 });
+});
+
+// --- completion time feature ---
+
+test('completeTodo marks done with chosen timestamp, immutable', () => {
+  const list = [createTodo(1, 'a', 0)];
+  const out = completeTodo(list, 1, 1718172600000);
+  assert.equal(out[0].done, true);
+  assert.equal(out[0].completedAt, 1718172600000);
+  assert.equal(list[0].done, false);
+  assert.equal(list[0].completedAt, undefined);
+});
+
+test('completeTodo with unknown id keeps list unchanged', () => {
+  const list = [createTodo(1, 'a', 0)];
+  assert.deepEqual(completeTodo(list, 99, 123), list);
+});
+
+test('uncompleteTodo un-marks done and clears completedAt', () => {
+  const list = completeTodo([createTodo(1, 'a', 0)], 1, 500);
+  const out = uncompleteTodo(list, 1);
+  assert.equal(out[0].done, false);
+  assert.equal(out[0].completedAt, null);
+});
+
+test('setCompletedAt updates time and keeps item done', () => {
+  const list = completeTodo([createTodo(1, 'a', 0)], 1, 500);
+  const out = setCompletedAt(list, 1, 900);
+  assert.equal(out[0].done, true);
+  assert.equal(out[0].completedAt, 900);
+  assert.deepEqual(setCompletedAt(list, 99, 900), list); // unknown id unchanged
+});
+
+test('formatTimeHM renders zero-padded HH:mm', () => {
+  const ts = new Date(2024, 5, 12, 9, 5).getTime();
+  assert.equal(formatTimeHM(ts), '09:05');
+  const ts2 = new Date(2024, 5, 12, 23, 59).getTime();
+  assert.equal(formatTimeHM(ts2), '23:59');
+});
+
+test('combineDateAndTime merges picked time into base day', () => {
+  const base = new Date(2024, 5, 12, 8, 0).getTime();
+  const expect = new Date(2024, 5, 12, 14, 30).getTime();
+  assert.equal(combineDateAndTime(base, '14:30'), expect);
+  assert.equal(combineDateAndTime(base, '9:05'), new Date(2024, 5, 12, 9, 5).getTime());
+});
+
+test('combineDateAndTime rejects malformed input', () => {
+  const base = new Date(2024, 5, 12, 8, 0).getTime();
+  assert.equal(combineDateAndTime(base, '25:99'), null);
+  assert.equal(combineDateAndTime(base, 'abc'), null);
+  assert.equal(combineDateAndTime(base, ''), null);
+  assert.equal(combineDateAndTime(base, null), null);
+});
+
+test('sanitizeTodo cleans stored objects, drops junk', () => {
+  const good = sanitizeTodo({ id: '7', title: '  hoc bai ', done: true, createdAt: '10', completedAt: '999' });
+  assert.deepEqual(good, { id: 7, title: 'hoc bai', done: true, createdAt: 10, completedAt: 999 });
+
+  const defaults = sanitizeTodo({ id: 3, title: 'x' });
+  assert.deepEqual(defaults, { id: 3, title: 'x', done: false, createdAt: 0, completedAt: null });
+
+  assert.equal(sanitizeTodo(null), null);
+  assert.equal(sanitizeTodo({ title: 'no id' }), null);
+  assert.equal(sanitizeTodo({ id: 4, title: '' }), null);
+  assert.equal(sanitizeTodo('junk'), null);
 });

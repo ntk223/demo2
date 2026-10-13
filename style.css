@@ -67,10 +67,22 @@ button.ghost { background: transparent; color: var(--muted); }
   padding: 10px 8px;
   border-bottom: 1px solid var(--line);
 }
-#todo-list li span { flex: 1; word-break: break-word; }
-#todo-list li.done span { text-decoration: line-through; color: var(--muted); }
+#todo-list li .title { flex: 1; word-break: break-word; }
+#todo-list li.done .title { text-decoration: line-through; color: var(--muted); }
 #todo-list input[type='checkbox'] { width: 18px; height: 18px; accent-color: var(--ok); }
 #todo-list button { padding: 4px 8px; }
+
+.when { color: var(--ok); font-size: 12px; white-space: nowrap; }
+.time-edit {
+  background: #0b1220;
+  border: 1px solid var(--line);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 4px 6px;
+  font-size: 12px;
+  color-scheme: dark;
+}
+.time-edit:focus { outline: 2px solid var(--accent); border-color: transparent; }
 
 #empty-hint { color: var(--muted); font-size: 13px; text-align: center; }
 

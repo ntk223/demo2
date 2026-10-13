@@ -7,3 +7,7 @@ const stats = await Promise.all(
 console.log('SMOKE', paths.map((p, i) => p + ':' + stats[i]).join(' '));
 const html = await fetch(base + '/').then((r) => r.text());
 console.log(html.includes('Todo Tracker') ? 'HTML_TITLE_OK' : 'HTML_TITLE_MISSING');
+const appJs = await fetch(base + '/app.mjs').then((r) => r.text());
+console.log(appJs.includes('set-time') ? 'APP_SYNCED' : 'APP_STALE');
+const libJs = await fetch(base + '/lib/tasks.mjs').then((r) => r.text());
+console.log(libJs.includes('combineDateAndTime') ? 'LIB_SYNCED' : 'LIB_STALE');

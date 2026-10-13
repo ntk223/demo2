@@ -5,6 +5,12 @@ import {
   toggleTodo,
   removeTodo,
   removeAllDone,
+  completeTodo,
+  uncompleteTodo,
+  setCompletedAt,
+  formatTimeHM,
+  combineDateAndTime,
+  sanitizeTodo,
   FILTER_ALL,
   FILTER_ACTIVE,
   FILTER_DONE,
@@ -19,7 +25,9 @@ function loadState() {
   try {
     const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
     return {
-      todos: Array.isArray(raw.todos) ? raw.todos : [],
+      todos: (Array.isArray(raw.todos) ? raw.todos : [])
+        .map(sanitizeTodo)
+        .filter(Boolean),
       filter: FILTERS.includes(raw.filter) ? raw.filter : FILTER_ALL,
     };
   } catch {
@@ -53,14 +61,32 @@ function render() {
     check.setAttribute('aria-label', 'Hoàn thành');
 
     const label = document.createElement('span');
+    label.className = 'title';
     label.textContent = todo.title;
+
+    li.append(check, label);
+
+    if (todo.done) {
+      const when = document.createElement('span');
+      when.className = 'when';
+      when.textContent = '✓ ' + formatTimeHM(todo.completedAt || Date.now());
+
+      const timeEdit = document.createElement('input');
+      timeEdit.type = 'time';
+      timeEdit.className = 'time-edit';
+      timeEdit.value = formatTimeHM(todo.completedAt || Date.now());
+      timeEdit.dataset.action = 'set-time';
+      timeEdit.setAttribute('aria-label', 'Chọn giờ hoàn thành');
+
+      li.append(when, timeEdit);
+    }
 
     const del = document.createElement('button');
     del.textContent = '✕';
     del.dataset.action = 'remove';
     del.setAttribute('aria-label', 'Xoá');
 
-    li.append(check, label, del);
+    li.append(del);
     list.append(li);
   }
 
@@ -98,9 +124,21 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   $('#todo-list').addEventListener('change', (e) => {
-    if (e.target.dataset.action !== 'toggle') return;
+    const action = e.target.dataset.action;
     const id = Number(e.target.closest('li').dataset.id);
-    mutate((todos) => toggleTodo(todos, id));
+    if (action === 'toggle') {
+      mutate((todos) =>
+        e.target.checked ? completeTodo(todos, id, Date.now()) : uncompleteTodo(todos, id)
+      );
+      return;
+    }
+    if (action === 'set-time') {
+      const todo = state.todos.find((t) => t.id === id);
+      const base = (todo && todo.completedAt) || Date.now();
+      const ts = combineDateAndTime(base, e.target.value);
+      if (ts) mutate((todos) => setCompletedAt(todos, id, ts));
+      else render(); // invalid pick — revert display
+    }
   });
 
   for (const btn of document.querySelectorAll('[data-filter]')) {
