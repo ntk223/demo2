@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Todo Tracker — demo2</title>
+  <link rel="stylesheet" href="style.css" />
+  <script type="module" src="app.mjs"></script>
+</head>
+<body>
+  <main class="app">
+    <h1>✅ Todo Tracker</h1>
+    <p class="sub">Thêm · tích hoàn thành · xoá · lọc trạng thái — dữ liệu lưu localStorage</p>
+
+    <form id="todo-form" autocomplete="off">
+      <input id="todo-input" placeholder="Việc cần làm…" maxlength="200" />
+      <button type="submit">Thêm</button>
+    </form>
+
+    <nav class="filters">
+      <button data-filter="all" class="active">Tất cả</button>
+      <button data-filter="active">Đang làm</button>
+      <button data-filter="done">Hoàn thành</button>
+      <button id="clear-done" class="ghost">Xoá mục đã xong</button>
+    </nav>
+
+    <ul id="todo-list"></ul>
+    <p id="empty-hint" hidden>Chưa có việc nào ở mục này.</p>
+
+    <footer class="stats">
+      Tổng <b id="count-total">0</b> · Đang làm <b id="count-active">0</b> · Đã xong <b id="count-done">0</b>
+    </footer>
+  </main>
+</body>
+</html>
