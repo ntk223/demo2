@@ -11,3 +11,5 @@ const appJs = await fetch(base + '/app.mjs').then((r) => r.text());
 console.log(appJs.includes('set-time') ? 'APP_SYNCED' : 'APP_STALE');
 const libJs = await fetch(base + '/lib/tasks.mjs').then((r) => r.text());
 console.log(libJs.includes('combineDateAndTime') ? 'LIB_SYNCED' : 'LIB_STALE');
+const css = await fetch(base + '/style.css').then((r) => r.text());
+console.log(css.includes('#f1f5f9') ? 'CSS_LIGHT_THEME' : 'CSS_STALE');
