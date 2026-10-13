@@ -3,33 +3,73 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Todo Tracker — demo2</title>
+  <title>TaskFlow — Công việc &amp; Lịch hẹn</title>
   <link rel="stylesheet" href="style.css" />
   <script type="module" src="app.mjs"></script>
 </head>
 <body>
-  <main class="app">
-    <h1>✅ Todo Tracker</h1>
-    <p class="sub">Thêm · tích hoàn thành · chọn giờ hoàn thành · xoá · lọc — lưu localStorage</p>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">✓</div>
+        <div>
+          <h1>TaskFlow</h1>
+          <p>Công việc &amp; lịch hẹn</p>
+        </div>
+      </div>
+      <div class="today-chip" id="today-chip">…</div>
+    </header>
 
-    <form id="todo-form" autocomplete="off">
-      <input id="todo-input" placeholder="Việc cần làm…" maxlength="200" />
-      <button type="submit">Thêm</button>
-    </form>
+    <div class="layout">
+      <section class="pane-main">
+        <form id="todo-form" class="composer" autocomplete="off">
+          <input id="todo-input" placeholder="Công việc mới…" maxlength="200" />
+          <div class="composer-row">
+            <input id="sched-date" type="date" aria-label="Ngày hẹn" title="Ngày hẹn (tuỳ chọn)" />
+            <input id="sched-time" type="time" aria-label="Giờ hẹn" title="Giờ hẹn (tuỳ chọn)" />
+            <button type="submit" class="primary">＋ Thêm việc</button>
+          </div>
+        </form>
 
-    <nav class="filters">
-      <button data-filter="all" class="active">Tất cả</button>
-      <button data-filter="active">Đang làm</button>
-      <button data-filter="done">Hoàn thành</button>
-      <button id="clear-done" class="ghost">Xoá mục đã xong</button>
-    </nav>
+        <nav class="filters">
+          <button data-filter="all" class="chip active">Tất cả</button>
+          <button data-filter="active" class="chip">Đang làm</button>
+          <button data-filter="done" class="chip">Hoàn thành</button>
+          <span class="spacer"></span>
+          <button id="clear-done" class="chip ghost">Xoá mục đã xong</button>
+        </nav>
 
-    <ul id="todo-list"></ul>
-    <p id="empty-hint" hidden>Chưa có việc nào ở mục này.</p>
+        <ul id="todo-list" class="list"></ul>
+        <p id="empty-hint" class="empty" hidden>
+          <span class="empty-icon">🗂</span><br />Chưa có việc nào ở mục này.
+        </p>
 
-    <footer class="stats">
-      Tổng <b id="count-total">0</b> · Đang làm <b id="count-active">0</b> · Đã xong <b id="count-done">0</b>
-    </footer>
+        <footer class="stats">
+          <span class="stat"><b id="count-total">0</b> tổng</span>
+          <span class="stat accent"><b id="count-active">0</b> đang làm</span>
+          <span class="stat ok"><b id="count-done">0</b> đã xong</span>
+        </footer>
+      </section>
+
+      <aside class="pane-side">
+        <div class="card cal">
+          <header class="cal-head">
+            <button id="cal-prev" class="nav" aria-label="Tháng trước">‹</button>
+            <b id="cal-title">…</b>
+            <button id="cal-next" class="nav" aria-label="Tháng sau">›</button>
+          </header>
+          <div class="cal-weekdays">
+            <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span>
+          </div>
+          <div id="cal-grid" class="cal-grid"></div>
+        </div>
+
+        <div class="card day-card">
+          <h2 id="day-title">Sắp tới</h2>
+          <ul id="day-list" class="day-list"></ul>
+        </div>
+      </aside>
+    </div>
   </main>
 </body>
 </html>
